@@ -1,4 +1,4 @@
-1) Connecting to SqLite3:
+#	1) Connecting to SqLite3:
 %python
 import sqlite3
 try:
@@ -23,7 +23,7 @@ except sqlite3.Error as error:
 	print('Error occurred - ', error)
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-2) Extract the total quantities of each item bought per customer aged 18-35.
+#	2) Extract the total quantities of each item bought per customer aged 18-35.
 
 >	Using SQL
 select * from (
@@ -54,7 +54,7 @@ result = res3.groupby(['Customer_id','Item_id','Age'])['quantity'].sum()
 #	Where filter quantity=0
 final_result=result.where(result.sum > 0)
 
-3) Storing the results to csv
+#	3) Storing the results to csv
 
 final_result.to_csv('Orders.csv',sep=';')
 
