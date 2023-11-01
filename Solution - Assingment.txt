@@ -1,0 +1,60 @@
+1) Connecting to SqLite3:
+%python
+import sqlite3
+try:
+
+	# Connect to DB and create a cursor
+	sqliteConnection = sqlite3.connect('sql.db')
+	cursor = sqliteConnection.cursor()
+	print('DB Init')
+
+	# Write a query and execute it with cursor
+	query = 'select sqlite_version();'
+	cursor.execute(query)
+
+	# Fetch and output result
+	result = cursor.fetchall()
+	print('SQLite Version is {}'.format(result))
+
+	# Close the cursor
+	cursor.close()
+
+except sqlite3.Error as error:
+	print('Error occurred - ', error)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+2) Extract the total quantities of each item bought per customer aged 18-35.
+
+>	Using SQL
+select * from (
+select Customer_id,Item_id,age,CONVERT(int,ROUND(SUM(distinct quantity),0)) as TotalAmount 
+from Sales s 
+left join Order O on s.sales_id=O.sales_id
+left join Customer C on C.customer_id=S.customer_id
+left join Items I on I.item_id=O.item_id
+where age is between 18 and 35
+Group by Customer_id,Item_id,age) where TotalAmount <> 0
+
+>	Using Pandas:
+import pandas as pd
+#	Create dataframes and read tables into it:
+df1 = pd.read_sql_table('Sales', database)
+df2 = pd.read_sql_table('Orders', database)
+df3 = pd.read_sql_table('Customer', database)
+df4 = pd.read_sql_table('Items', database)
+
+#	Join all the dataframes
+res1=df1.join(df2, lsuffix="_left", rsuffix="_right", how='inner')
+res2=res1.join(df3, lsuffix="_left", rsuffix="_right", how='inner')
+res3=res2.join(df4, lsuffix="_left", rsuffix="_right", how='inner')
+
+#	Group by and sum all quantities
+result = res3.groupby(['Customer_id','Item_id','Age'])['quantity'].sum()
+
+#	Where filter quantity=0
+final_result=result.where(result.sum > 0)
+
+3) Storing the results to csv
+
+final_result.to_csv('Orders.csv',sep=';')
+
